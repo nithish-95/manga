@@ -1,0 +1,13 @@
+{{ define "content" }}
+<div class="bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold mb-4">{{ .Attributes.Title }}</h2>
+  <div class="mb-4">
+    {{ range .Attributes.Pages }}
+      <img src="/image-proxy?url={{ . }}" alt="Manga Page" class="mb-4 w-full rounded">
+    {{ else }}
+      <p>No pages available.</p>
+    {{ end }}
+  </div>
+  <a href="javascript:history.back()" class="text-blue-500 hover:underline">Go Back</a>
+</div>
+{{ end }}

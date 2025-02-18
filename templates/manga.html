@@ -1,0 +1,26 @@
+{{ define "content" }}
+<div class="bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-bold mb-4">{{ index .Manga.Attributes.Title "en" }}</h2>
+  <p class="mb-4">{{ index .Manga.Attributes.Description "en" }}</p>
+  
+  <div>
+    <h3 class="text-xl font-semibold mb-2">Chapters:</h3>
+    {{ if .Chapters }}
+      <ul class="list-disc pl-5">
+        {{ range .Chapters }}
+          <li class="mb-1">
+            <a href="/read/{{ .ID }}" class="text-blue-500 hover:underline">
+              {{ if .Attributes.Chapter }}Chapter {{ .Attributes.Chapter }}{{ else }}Chapter N/A{{ end }}
+              {{ if .Attributes.Title }} - {{ .Attributes.Title }}{{ end }}
+              {{ if .Attributes.Volume }} (Volume: {{ .Attributes.Volume }}){{ end }}
+            </a>
+          </li>
+        {{ end }}
+      </ul>
+    {{ else }}
+      <p>No chapters available.</p>
+    {{ end }}
+  </div>
+  <a href="javascript:history.back()" class="text-blue-500 hover:underline mt-4 inline-block">Go Back</a>
+</div>
+{{ end }}
