@@ -157,11 +157,29 @@ func GetPopularManga() ([]Manga, error) {
 	return GetMangaList(params)
 }
 
+// GetPopularMangaWithPagination fetches popular manga with pagination.
+func GetPopularMangaWithPagination(limit, offset int) ([]Manga, error) {
+	params := url.Values{}
+	params.Add("order[followedCount]", "desc")
+	params.Add("limit", fmt.Sprintf("%d", limit))
+	params.Add("offset", fmt.Sprintf("%d", offset))
+	return GetMangaList(params)
+}
+
 // GetRecentlyUpdatedManga fetches recently updated manga.
 func GetRecentlyUpdatedManga() ([]Manga, error) {
 	params := url.Values{}
 	params.Add("order[updatedAt]", "desc")
 	params.Add("limit", "10") // Fetch 10 recently updated manga
+	return GetMangaList(params)
+}
+
+// GetRecentlyUpdatedMangaWithPagination fetches recently updated manga with pagination.
+func GetRecentlyUpdatedMangaWithPagination(limit, offset int) ([]Manga, error) {
+	params := url.Values{}
+	params.Add("order[updatedAt]", "desc")
+	params.Add("limit", fmt.Sprintf("%d", limit))
+	params.Add("offset", fmt.Sprintf("%d", offset))
 	return GetMangaList(params)
 }
 

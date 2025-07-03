@@ -1,0 +1,57 @@
+{{ define "content" }}
+<h1 class="text-4xl font-bold text-text-primary mb-8">{{ .Title }}</h1>
+
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+  {{ range .Mangas }}
+  <div class="group card-hover bg-card rounded-xl shadow-md overflow-hidden">
+    <div class="relative aspect-[2/3]">
+      {{ if .Attributes.CoverURL }}
+        <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
+             alt="Cover image"
+             class="w-full h-full object-cover absolute inset-0">
+      {{ else }}
+        <div class="w-full h-full bg-surface flex items-center justify-center absolute inset-0">
+          <span class="text-text-secondary">No Cover</span>
+        </div>
+      {{ end }}
+      <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+        <a href="/manga/{{ .ID }}" class="btn-secondary w-full">View Details</a>
+      </div>
+    </div>
+    <div class="p-3">
+      <h3 class="font-bold text-text-primary truncate">
+        {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
+          {{ . }}
+        {{ else }}
+          Untitled
+        {{ end }}
+      </h3>
+      <div class="flex justify-between text-sm text-text-secondary mt-1">
+        <span>Chapter N/A</span>
+        <div class="flex items-center">
+          <svg class="w-4 h-4 text-accent mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.381-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z"></path></svg>
+          <span>4.8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ end }}
+</div>
+
+{{ if or .PrevPage .NextPage }}
+<div class="mt-8 flex justify-center gap-4">
+  {{ if .PrevPage }}
+    <a href="{{ .BaseURL }}?page={{ .PrevPage }}" 
+       class="bg-card px-5 py-2 rounded-lg shadow hover:shadow-md transition-shadow border border-surface text-text-primary">
+      ← Previous
+    </a>
+  {{ end }}
+  {{ if .NextPage }}
+    <a href="{{ .BaseURL }}?page={{ .NextPage }}" 
+       class="bg-card px-5 py-2 rounded-lg shadow hover:shadow-md transition-shadow border border-surface text-text-primary">
+      Next →
+    </a>
+  {{ end }}
+</div>
+{{ end }}
+{{ end }}

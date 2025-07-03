@@ -1,18 +1,31 @@
 {{ define "content" }}
 <div class="bg-card p-6 rounded-xl shadow-lg md:p-8">
-  <h2 class="text-3xl font-bold text-text mb-4 md:text-4xl">{{ index .Manga.Attributes.Title "en" }}</h2>
-  <p class="text-text-light mb-6 leading-relaxed">{{ index .Manga.Attributes.Description "en" }}</p>
+  <div class="flex flex-col md:flex-row gap-8 mb-8">
+    {{ if .Manga.Attributes.CoverURL }}
+      <img src="/image-proxy?url={{ .Manga.Attributes.CoverURL }}" 
+           alt="Cover image" 
+           class="w-full md:w-1/3 h-auto rounded-lg shadow-md object-cover">
+    {{ else }}
+      <div class="w-full md:w-1/3 h-72 bg-surface flex items-center justify-center rounded-lg shadow-md">
+        <span class="text-text-secondary">No Cover</span>
+      </div>
+    {{ end }}
+    <div class="flex-1">
+      <h2 class="text-3xl font-bold text-text-primary mb-4 md:text-4xl">{{ index .Manga.Attributes.Title "en" }}</h2>
+      <p class="text-text-secondary mb-6 leading-relaxed">{{ index .Manga.Attributes.Description "en" }}</p>
+    </div>
+  </div>
   
   <div class="mt-8">
-    <h3 class="text-2xl font-semibold text-text mb-4">Chapters:</h3>
+    <h3 class="text-2xl font-semibold text-text-primary mb-4">Chapters:</h3>
     {{ if .Chapters }}
       <ul class="space-y-3">
         {{ range .Chapters }}
-          <li class="bg-background p-3 rounded-lg shadow-sm hover:bg-gray-100 transition-colors">
+          <li class="bg-surface p-3 rounded-lg shadow-sm hover:bg-surface/80 transition-colors">
             <a href="/manga/{{ $.Manga.ID }}/read/{{ .ID }}" class="text-primary hover:underline text-lg block">
               {{ if .Attributes.Chapter }}Chapter {{ .Attributes.Chapter }}{{ else }}Chapter N/A{{ end }}
               {{ if .Attributes.Title }} - {{ .Attributes.Title }}{{ end }}
-              {{ if .Attributes.Volume }} <span class="text-text-light text-sm">(Volume: {{ .Attributes.Volume }})</span>{{ end }}
+              {{ if .Attributes.Volume }} <span class="text-text-secondary text-sm">(Volume: {{ .Attributes.Volume }})</span>{{ end }}
             </a>
           </li>
         {{ end }}
@@ -22,23 +35,22 @@
       <div class="mt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <div>
           {{ if gt .Page 1 }}
-            <a href="/manga/{{ .Manga.ID }}?page={{ .Page | add -1 }}" class="bg-primary text-card px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors text-lg font-semibold">Previous Page</a>
+            <a href="/manga/{{ .Manga.ID }}?page={{ .Page | add -1 }}" class="btn-primary">Previous Page</a>
           {{ end }}
         </div>
-        <div class="text-text-light text-lg">
+        <div class="text-text-secondary text-lg">
           Page {{ .Page }} of {{ .TotalPages }}
         </div>
         <div>
           {{ if lt .Page .TotalPages }}
-            <a href="/manga/{{ .Manga.ID }}?page={{ .Page | add 1 }}" class="bg-primary text-card px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors text-lg font-semibold">Next Page</a>
+            <a href="/manga/{{ .Manga.ID }}?page={{ .Page | add 1 }}" class="btn-primary">Next Page</a>
           {{ end }}
         </div>
       </div>
     {{ else }}
-      <p class="text-text-light text-lg">No chapters available for this manga.</p>
+      <p class="text-text-secondary text-lg">No chapters available for this manga.</p>
     {{ end }}
   </div>
-  <a href="{{ .BackLink }}" class="mt-8 inline-block bg-secondary text-card px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 transition-colors text-lg font-semibold">Go Back</a>
+  <a href="{{ .BackLink }}" class="mt-8 inline-block btn-secondary">Go Back</a>
 </div>
 {{ end }}
-

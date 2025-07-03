@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -41,6 +42,7 @@ func init() {
 	templates["home"] = template.Must(template.New("home.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/home.html")))
 	templates["manga"] = template.Must(template.New("manga.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/manga.html")))
 	templates["reader"] = template.Must(template.New("reader.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/reader.html")))
+	templates["manga_list"] = template.Must(template.New("manga_list.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/manga_list.html")))
 }
 
 func main() {
@@ -55,6 +57,9 @@ func main() {
 	r.Get("/image-proxy", imageProxyHandler)
 	r.Get("/manga/{mangaID}", mangaHandler)
 	r.Get("/manga/{mangaID}/read/{chapterID}", chapterHandler)
+	r.Get("/popular", popularMangaHandler)
+	r.Get("/recent", recentMangaHandler)
+	r.Get("/random-manga-json", randomMangaJSONHandler)
 
 	// Get the absolute path of the executable.
 	executablePath, err := os.Executable()
@@ -104,6 +109,23 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error searching manga", http.StatusInternalServerError)
 			return
 		}
+
+		// Fetch covers for search results
+		var coverWg sync.WaitGroup
+		for i := range data.Mangas {
+			coverWg.Add(1)
+			go func(i int) {
+				defer coverWg.Done()
+				coverURL, coverErr := mangadex.GetCoverForManga(data.Mangas[i].ID)
+				if coverErr != nil {
+					log.Printf("Error fetching cover for search result manga %s: %v", data.Mangas[i].ID, coverErr)
+				} else {
+					data.Mangas[i].Attributes.CoverURL = coverURL
+				}
+			}(i)
+		}
+		coverWg.Wait()
+
 	} else {
 		var wg sync.WaitGroup
 		var popularErr, recentErr, randomErr error
@@ -217,6 +239,16 @@ func mangaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch cover for the manga
+	if manga.ID != "" {
+		coverURL, coverErr := mangadex.GetCoverForManga(manga.ID)
+		if coverErr != nil {
+			log.Printf("Error fetching cover for manga %s: %v", manga.ID, coverErr)
+		} else {
+			manga.Attributes.CoverURL = coverURL
+		}
+	}
+
 	// Fetch the chapters for this manga.
 	chaptersResp, err := mangadex.GetChaptersForManga(mangaID, limit, offset)
 	if err != nil {
@@ -309,4 +341,143 @@ func chapterHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func popularMangaHandler(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+
+	limit := 20 // Display more on the dedicated page
+	offset := (page - 1) * limit
+
+	mangas, err := mangadex.GetPopularMangaWithPagination(limit, offset)
+	if err != nil {
+		log.Printf("Error fetching popular mangas: %v", err)
+		http.Error(w, "Error fetching popular mangas", http.StatusInternalServerError)
+		return
+	}
+
+	// Fetch covers for mangas
+	var coverWg sync.WaitGroup
+	for i := range mangas {
+		coverWg.Add(1)
+		go func(i int) {
+			defer coverWg.Done()
+			coverURL, coverErr := mangadex.GetCoverForManga(mangas[i].ID)
+			if coverErr != nil {
+				log.Printf("Error fetching cover for manga %s: %v", mangas[i].ID, coverErr)
+			} else {
+				mangas[i].Attributes.CoverURL = coverURL
+			}
+		}(i)
+	}
+	coverWg.Wait()
+
+	data := struct {
+		Title      string
+		Mangas     []mangadex.Manga
+		BaseURL    string
+		PrevPage   int
+		NextPage   int
+		TotalPages int
+	}{
+		Title:    "Popular Mangas",
+		Mangas:   mangas,
+		BaseURL:  "/popular",
+		PrevPage: page - 1,
+		NextPage: page + 1,
+		// TotalPages: calculate based on total count from API if available
+	}
+
+	err = templates["manga_list"].ExecuteTemplate(w, "base.html", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func recentMangaHandler(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+
+	limit := 20 // Display more on the dedicated page
+	offset := (page - 1) * limit
+
+	mangas, err := mangadex.GetRecentlyUpdatedMangaWithPagination(limit, offset)
+	if err != nil {
+		log.Printf("Error fetching recently updated mangas: %v", err)
+		http.Error(w, "Error fetching recently updated mangas", http.StatusInternalServerError)
+		return
+	}
+
+	// Fetch covers for mangas
+	var coverWg sync.WaitGroup
+	for i := range mangas {
+		coverWg.Add(1)
+		go func(i int) {
+			defer coverWg.Done()
+			coverURL, coverErr := mangadex.GetCoverForManga(mangas[i].ID)
+			if coverErr != nil {
+				log.Printf("Error fetching cover for manga %s: %v", mangas[i].ID, coverErr)
+			} else {
+				mangas[i].Attributes.CoverURL = coverURL
+			}
+		}(i)
+	}
+	coverWg.Wait()
+
+	data := struct {
+		Title      string
+		Mangas     []mangadex.Manga
+		BaseURL    string
+		PrevPage   int
+		NextPage   int
+		TotalPages int
+	}{
+		Title:    "Recently Updated Mangas",
+		Mangas:   mangas,
+		BaseURL:  "/recent",
+		PrevPage: page - 1,
+		NextPage: page + 1,
+		// TotalPages: calculate based on total count from API if available
+	}
+
+	err = templates["manga_list"].ExecuteTemplate(w, "base.html", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func randomMangaJSONHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	manga, err := mangadex.GetRandomManga()
+	if err != nil {
+		log.Printf("Error fetching random manga: %v", err)
+		http.Error(w, "Failed to fetch random manga", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to fetch random manga"})
+		return
+	}
+
+	// Fetch cover for random manga
+	if manga.ID != "" {
+		coverURL, coverErr := mangadex.GetCoverForManga(manga.ID)
+		if coverErr != nil {
+			log.Printf("Error fetching cover for random manga %s: %v", manga.ID, coverErr)
+			// Continue without cover if there's an error fetching it
+		} else {
+			manga.Attributes.CoverURL = coverURL
+		}
+	}
+
+	// If manga is empty (e.g., no random manga found), return an empty object
+	if manga.ID == "" {
+		json.NewEncoder(w).Encode(map[string]string{})
+		return
+	}
+
+	json.NewEncoder(w).Encode(manga)
 }
