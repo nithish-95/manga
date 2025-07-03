@@ -43,3 +43,5 @@ frontend/build/
 
 # Backend build output
 backend/bin/
+bin/
+node_modules/
