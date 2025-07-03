@@ -1,6 +1,6 @@
 {
   "scripts": {
-  "build:css": "npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css"
+  "build:css": "./node_modules/.bin/tailwindcss -i ./public/css/input.css -o ./public/css/output.css"
 },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
