@@ -1,14 +1,15 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"sync"
 
@@ -17,20 +18,16 @@ import (
 	"github.com/nithish-95/manga/backend/mangadex"
 )
 
+var templateFiles embed.FS
+
+var staticFiles embed.FS
+
 var (
 	// templates holds all our parsed templates.
 	templates map[string]*template.Template
 )
 
 func init() {
-	// Get the absolute path of the executable.
-	executablePath, err := os.Executable()
-	if err != nil {
-		log.Fatalf("Failed to get executable path: %v", err)
-	}
-	// The executable is in bin/, so the project root is one level up.
-	projectRoot := filepath.Dir(filepath.Dir(executablePath))
-
 	// Pre-parse all templates on application startup.
 	funcMap := template.FuncMap{
 		"add": func(a, b int) int {
@@ -40,10 +37,10 @@ func init() {
 	}
 
 	templates = make(map[string]*template.Template)
-	templates["home"] = template.Must(template.New("home.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/home.html")))
-	templates["manga"] = template.Must(template.New("manga.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/manga.html")))
-	templates["reader"] = template.Must(template.New("reader.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/reader.html")))
-	templates["manga_list"] = template.Must(template.New("manga_list.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/manga_list.html")))
+	templates["home"] = template.Must(template.New("home.html").Funcs(funcMap).ParseFS(templateFiles, "frontend/templates/base.html", "frontend/templates/home.html"))
+	templates["manga"] = template.Must(template.New("manga.html").Funcs(funcMap).ParseFS(templateFiles, "frontend/templates/base.html", "frontend/templates/manga.html"))
+	templates["reader"] = template.Must(template.New("reader.html").Funcs(funcMap).ParseFS(templateFiles, "frontend/templates/base.html", "frontend/templates/reader.html"))
+	templates["manga_list"] = template.Must(template.New("manga_list.html").Funcs(funcMap).ParseFS(templateFiles, "frontend/templates/base.html", "frontend/templates/manga_list.html"))
 }
 
 func main() {
@@ -62,15 +59,14 @@ func main() {
 	r.Get("/recent", recentMangaHandler)
 	r.Get("/random-manga-json", randomMangaJSONHandler)
 
-	// Get the absolute path of the executable.
-	executablePath, err := os.Executable()
+	// Create a sub-filesystem for static files to remove the "frontend/public" prefix
+	staticFS, err := fs.Sub(staticFiles, "frontend/public")
 	if err != nil {
-		log.Fatalf("Failed to get executable path: %v", err)
+		log.Fatal(err)
 	}
-	// The executable is in bin/, so the project root is one level up.
-	projectRoot := filepath.Dir(filepath.Dir(executablePath))
-	staticPath := filepath.Join(projectRoot, "frontend", "public")
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(staticPath))))
+
+	// Serve static files (CSS, JS, images)
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -86,14 +82,14 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("search")
 
 	data := struct {
-		Mangas           []mangadex.Manga
-		SearchQuery      string
-		PopularMangas    []mangadex.Manga
-		RecentMangas     []mangadex.Manga
-		RandomMangas     []mangadex.Manga // Changed to slice
-		PrevPage         int
-		NextPage         int
-		TotalPages       int
+		Mangas        []mangadex.Manga
+		SearchQuery   string
+		PopularMangas []mangadex.Manga
+		RecentMangas  []mangadex.Manga
+		RandomMangas  []mangadex.Manga // Changed to slice
+		PrevPage      int
+		NextPage      int
+		TotalPages    int
 	}{
 		SearchQuery: searchQuery,
 		PrevPage:    0,
