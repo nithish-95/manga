@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"text/template"
@@ -21,6 +22,14 @@ var (
 )
 
 func init() {
+	// Get the absolute path of the executable.
+	executablePath, err := os.Executable()
+	if err != nil {
+		log.Fatalf("Failed to get executable path: %v", err)
+	}
+	// The executable is in bin/, so the project root is one level up.
+	projectRoot := filepath.Dir(filepath.Dir(executablePath))
+
 	// Pre-parse all templates on application startup.
 	funcMap := template.FuncMap{
 		"add": func(a, b int) int {
@@ -29,9 +38,9 @@ func init() {
 	}
 
 	templates = make(map[string]*template.Template)
-	templates["home"] = template.Must(template.New("home.html").Funcs(funcMap).ParseFiles("../frontend/templates/base.html", "../frontend/templates/home.html"))
-	templates["manga"] = template.Must(template.New("manga.html").Funcs(funcMap).ParseFiles("../frontend/templates/base.html", "../frontend/templates/manga.html"))
-	templates["reader"] = template.Must(template.New("reader.html").Funcs(funcMap).ParseFiles("../frontend/templates/base.html", "../frontend/templates/reader.html"))
+	templates["home"] = template.Must(template.New("home.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/home.html")))
+	templates["manga"] = template.Must(template.New("manga.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/manga.html")))
+	templates["reader"] = template.Must(template.New("reader.html").Funcs(funcMap).ParseFiles(filepath.Join(projectRoot, "frontend/templates/base.html"), filepath.Join(projectRoot, "frontend/templates/reader.html")))
 }
 
 func main() {
@@ -47,8 +56,15 @@ func main() {
 	r.Get("/manga/{mangaID}", mangaHandler)
 	r.Get("/manga/{mangaID}/read/{chapterID}", chapterHandler)
 
-	// Serve static files (if any)
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/public"))))
+	// Get the absolute path of the executable.
+	executablePath, err := os.Executable()
+	if err != nil {
+		log.Fatalf("Failed to get executable path: %v", err)
+	}
+	// The executable is in bin/, so the project root is one level up.
+	projectRoot := filepath.Dir(filepath.Dir(executablePath))
+	staticPath := filepath.Join(projectRoot, "frontend", "public")
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(staticPath))))
 
 	port := os.Getenv("PORT")
 	if port == "" {

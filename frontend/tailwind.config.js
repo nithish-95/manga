@@ -1,18 +1,32 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./templates/**/*.html",
+    "/Users/nithish/Desktop/Codeing_Practice/Projects/manga/frontend/templates/**/*.html",
   ],
   theme: {
     extend: {
       colors: {
-        primary: '#3B82F6', // A vibrant blue
-        secondary: '#6B7280', // A neutral gray
-        accent: '#EC4899', // A bright pink for highlights
-        background: '#F3F4F6', // Light gray for backgrounds
-        card: '#FFFFFF', // White for cards and containers
-        text: '#1F2937', // Dark gray for text
-        'text-light': '#4B5563', // Lighter gray for secondary text
+        primary: {
+          DEFAULT: '#6366F1',
+          '50': '#E0E7FF',
+          '100': '#C7D2FE',
+          '200': '#A5B4FC',
+          '300': '#818CF8',
+          '400': '#6366F1',
+          '500': '#4F46E5',
+          '600': '#4338CA',
+          '700': '#3730A3',
+          '800': '#312E81',
+          '900': '#282567',
+        },
+        secondary: '#EC4899',
+        background: '#F9FAFB',
+        card: '#FFFFFF',
+        text: '#111827',
+        'text-light': '#6B7280',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },

@@ -31,6 +31,23 @@ type Manga struct {
 	Chapters []ChapterSummary `json:"chapters"` // Consider removing if unused.
 }
 
+// GetTitle returns the English title if available, otherwise the Japanese title, or the first available title.
+func (m Manga) GetTitle() string {
+	if title, ok := m.Attributes.Title["en"]; ok && title != "" {
+		return title
+	}
+	if title, ok := m.Attributes.Title["ja"]; ok && title != "" {
+		return title
+	}
+	// Fallback to any available title if en or ja are not present
+	for _, title := range m.Attributes.Title {
+		if title != "" {
+			return title
+		}
+	}
+	return "Untitled"
+}
+
 // ChapterSummary represents basic chapter info.
 type ChapterSummary struct {
 	ID    string `json:"id"`

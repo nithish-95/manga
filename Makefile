@@ -1,7 +1,8 @@
 all: clean build run
 
 build:
-	go build -o bin/manga .
+	cd backend && go build -o ../bin/manga .
+	cd frontend && npm run build:css
 run: 
 	bin/manga
 clean:

@@ -9,12 +9,12 @@
   <link href="/static/css/output.css" rel="stylesheet">
 </head>
 <body class="font-sans bg-background text-text antialiased">
-  <header class="bg-primary text-card shadow-lg">
+  <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold tracking-tight">Manga Reader</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-indigo-600">Manga Reader</h1>
         <nav>
-          <a href="/" class="hover:text-primary-200 transition-colors">Home</a>
+          <a href="/" class="text-lg font-medium text-gray-600 hover:text-indigo-600 transition-colors">Home</a>
         </nav>
       </div>
     </div>
@@ -24,9 +24,10 @@
     {{ block "content" . }}{{ end }}
   </main>
 
-  <footer class="bg-text text-background mt-12">
-    <div class="container mx-auto px-4 py-6 text-center">
+  <footer class="bg-gray-800 text-white mt-12">
+    <div class="container mx-auto px-4 py-8 text-center">
       <p>&copy; 2025 Manga Reader. All rights reserved.</p>
+      <p class="mt-2">Powered by Go and Tailwind CSS</p>
     </div>
   </footer>
 </body>

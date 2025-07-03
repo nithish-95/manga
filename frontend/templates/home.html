@@ -27,11 +27,7 @@
     {{ end }}
     <div class="p-4">
       <h2 class="text-lg font-semibold mb-2 truncate">
-        {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
-          {{ . }}
-        {{ else }}
-          Untitled
-        {{ end }}
+        {{ .GetTitle }}
       </h2>
       <a href="/manga/{{ .ID }}" 
          class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
@@ -63,24 +59,38 @@
 </div>
 {{ end }}
 {{ else }}
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-20 mb-12">
+  <div class="container mx-auto px-4 text-center">
+    <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4">Welcome to Manga Reader</h1>
+    <p class="text-lg md:text-xl mb-8">Discover and read your favorite manga online.</p>
+    <a href="#popular-mangas" class="bg-white text-indigo-600 font-bold py-3 px-8 rounded-full hover:bg-gray-200 transition-colors">
+      Explore Now
+    </a>
+  </div>
+</section>
+
 <div class="space-y-12">
   {{ if .PopularMangas }}
-  <div>
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Popular Mangas</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  <div id="popular-mangas">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Popular Mangas</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {{ range .PopularMangas }}
-      <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-        {{ if .Attributes.CoverURL }}
-          <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
-               alt="Cover image"
-               class="w-full h-64 object-cover">
-        {{ else }}
-          <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
-            <span class="text-gray-400">No Cover</span>
-          </div>
-        {{ end }}
-        <div class="p-4">
-          <h2 class="text-lg font-semibold mb-2 truncate">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform">
+        <div class="relative">
+          {{ if .Attributes.CoverURL }}
+            <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
+                 alt="Cover image"
+                 class="w-full h-72 object-cover">
+          {{ else }}
+            <div class="w-full h-72 bg-gray-100 flex items-center justify-center">
+              <span class="text-gray-400">No Cover</span>
+            </div>
+          {{ end }}
+          <div class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 m-2 rounded-md">Popular</div>
+        </div>
+        <div class="p-5">
+          <h2 class="text-xl font-semibold mb-2 truncate">
             {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
               {{ . }}
             {{ else }}
@@ -88,7 +98,7 @@
             {{ end }}
           </h2>
           <a href="/manga/{{ .ID }}" 
-             class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+             class="inline-block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
             View Details
           </a>
         </div>
@@ -100,21 +110,21 @@
 
   {{ if .RecentMangas }}
   <div>
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Recently Updated Mangas</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Recently Updated Mangas</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {{ range .RecentMangas }}
-      <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform">
         {{ if .Attributes.CoverURL }}
           <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
                alt="Cover image"
-               class="w-full h-64 object-cover">
+               class="w-full h-72 object-cover">
         {{ else }}
-          <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+          <div class="w-full h-72 bg-gray-100 flex items-center justify-center">
             <span class="text-gray-400">No Cover</span>
           </div>
         {{ end }}
-        <div class="p-4">
-          <h2 class="text-lg font-semibold mb-2 truncate">
+        <div class="p-5">
+          <h2 class="text-xl font-semibold mb-2 truncate">
             {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
               {{ . }}
             {{ else }}
@@ -122,7 +132,7 @@
             {{ end }}
           </h2>
           <a href="/manga/{{ .ID }}" 
-             class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+             class="inline-block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
             View Details
           </a>
         </div>
@@ -134,20 +144,20 @@
 
   {{ if .RandomManga.ID }}
   <div>
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Random Pick for You</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Random Pick for You</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform">
         {{ if .RandomManga.Attributes.CoverURL }}
           <img src="/image-proxy?url={{ .RandomManga.Attributes.CoverURL }}" 
                alt="Cover image"
-               class="w-full h-64 object-cover">
+               class="w-full h-72 object-cover">
         {{ else }}
-          <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+          <div class="w-full h-72 bg-gray-100 flex items-center justify-center">
             <span class="text-gray-400">No Cover</span>
           </div>
         {{ end }}
-        <div class="p-4">
-          <h2 class="text-lg font-semibold mb-2 truncate">
+        <div class="p-5">
+          <h2 class="text-xl font-semibold mb-2 truncate">
             {{ with or (index .RandomManga.Attributes.Title "en") (index .RandomManga.Attributes.Title "ja") }} 
               {{ . }}
             {{ else }}
@@ -155,7 +165,7 @@
             {{ end }}
           </h2>
           <a href="/manga/{{ .RandomManga.ID }}" 
-             class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+             class="inline-block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
             View Details
           </a>
         </div>
