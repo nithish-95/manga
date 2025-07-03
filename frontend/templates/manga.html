@@ -12,7 +12,15 @@
     {{ end }}
     <div class="flex-1">
       <h2 class="text-3xl font-bold text-text-primary mb-4 md:text-4xl">{{ index .Manga.Attributes.Title "en" }}</h2>
-      <p class="text-text-secondary mb-6 leading-relaxed">{{ index .Manga.Attributes.Description "en" }}</p>
+      {{ if .Manga.Attributes.Description }}
+        {{ if (printf "%T" .Manga.Attributes.Description) | eq "string" }}
+          <p class="text-text-secondary mb-6 leading-relaxed">{{ .Manga.Attributes.Description }}</p>
+        {{ else if (printf "%T" .Manga.Attributes.Description) | eq "map[string]interface {}" }}
+          <p class="text-text-secondary mb-6 leading-relaxed">{{ index .Manga.Attributes.Description "en" }}</p>
+        {{ else }}
+          <p class="text-text-secondary mb-6 leading-relaxed">No description available.</p>
+        {{ end }}
+      {{ end }}
     </div>
   </div>
   

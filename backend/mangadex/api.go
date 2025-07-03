@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -24,7 +25,7 @@ type Manga struct {
 	ID         string `json:"id"`
 	Attributes struct {
 		Title       map[string]string `json:"title"`
-		Description map[string]string `json:"description"`
+		Description interface{} `json:"description"` // Changed to interface{}
 		// CoverURL will be populated after fetching cover data.
 		CoverURL string `json:"cover_url,omitempty"`
 	} `json:"attributes"`
@@ -206,7 +207,59 @@ func GetRandomManga() (Manga, error) {
 		log.Printf("JSON decode error: %v", err)
 		return Manga{}, err
 	}
+
+	// Ensure Attributes is initialized, even if empty from API
+	if result.Data.Attributes.Title == nil {
+		result.Data.Attributes.Title = make(map[string]string)
+	}
+
 	return result.Data, nil
+}
+
+// GetRandomMangas fetches multiple random mangas.
+func GetRandomMangas(count int) ([]Manga, error) {
+	var mangas []Manga
+	var wg sync.WaitGroup
+	var mu sync.Mutex // Mutex to protect shared 'mangas' slice
+	
+	for i := 0; i < count; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			manga, err := GetRandomManga()
+			if err != nil {
+				log.Printf("Error fetching random manga: %v", err)
+				return
+			}
+			mu.Lock()
+			mangas = append(mangas, manga)
+			mu.Unlock()
+		}()
+	}
+	wg.Wait()
+
+	// Fetch covers for random mangas
+	var coverWg sync.WaitGroup
+	for i := range mangas {
+		coverWg.Add(1)
+		go func(i int) {
+			defer coverWg.Done()
+			// Only attempt to fetch cover if Attributes exists and has a Title (as a proxy for valid attributes)
+			if mangas[i].Attributes.Title != nil { // Check for a non-nil attribute, like Title
+				coverURL, coverErr := GetCoverForManga(mangas[i].ID)
+				if coverErr != nil {
+					log.Printf("Error fetching cover for random manga %s: %v", mangas[i].ID, coverErr)
+				} else {
+					mangas[i].Attributes.CoverURL = coverURL
+				}
+			} else {
+				log.Printf("Skipping cover fetch for manga %s: Attributes or Title is nil", mangas[i].ID)
+			}
+		}(i)
+	}
+	coverWg.Wait()
+
+	return mangas, nil
 }
 
 // GetManga fetches a specific manga by its ID.
@@ -227,6 +280,11 @@ func GetManga(mangaID string) (Manga, error) {
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return Manga{}, err
+	}
+
+	// Ensure Attributes is initialized, even if empty from API
+	if result.Data.Attributes.Title == nil {
+		result.Data.Attributes.Title = make(map[string]string)
 	}
 
 	mangaCache.Set(mangaID, result.Data)
