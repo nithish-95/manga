@@ -1,0 +1,33 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manga Reader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="/static/css/output.css" rel="stylesheet">
+</head>
+<body class="font-sans bg-background text-text antialiased">
+  <header class="bg-primary text-card shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold tracking-tight">Manga Reader</h1>
+        <nav>
+          <a href="/" class="hover:text-primary-200 transition-colors">Home</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container mx-auto px-4 py-8">
+    {{ block "content" . }}{{ end }}
+  </main>
+
+  <footer class="bg-text text-background mt-12">
+    <div class="container mx-auto px-4 py-6 text-center">
+      <p>&copy; 2025 Manga Reader. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

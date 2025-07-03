@@ -1,0 +1,28 @@
+{{ define "content" }}
+<div class="bg-card p-4 rounded-xl shadow-lg md:p-8">
+  <h2 class="text-2xl font-bold text-text mb-4 text-center md:text-3xl">{{ .Chapter.Attributes.Title }}</h2>
+  <div class="mb-4 space-y-4">
+    {{ range .Pages }}
+      <img src="/image-proxy?url={{ . }}" alt="Manga Page" class="w-full h-auto rounded-lg shadow-md mx-auto block">
+    {{ else }}
+      <p class="text-text-light text-lg text-center">No pages available for this chapter.</p>
+    {{ end }}
+  </div>
+
+  <!-- Navigation -->
+  <div class="mt-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+    <div>
+      {{ if .PrevChapter }}
+        <a href="/manga/{{ .MangaID }}/read/{{ .PrevChapter }}" class="bg-primary text-card px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors text-lg font-semibold">Previous Chapter</a>
+      {{ end }}
+    </div>
+    <div>
+      {{ if .NextChapter }}
+        <a href="/manga/{{ .MangaID }}/read/{{ .NextChapter }}" class="bg-primary text-card px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors text-lg font-semibold">Next Chapter</a>
+      {{ end }}
+    </div>
+  </div>
+
+  <a href="{{ .BackLink }}" class="mt-8 inline-block bg-secondary text-card px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 transition-colors text-lg font-semibold">Go Back to Chapters</a>
+</div>
+{{ end }}

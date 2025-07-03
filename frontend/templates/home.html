@@ -1,0 +1,168 @@
+{{ define "content" }}
+<div class="max-w-3xl mx-auto mb-8">
+  <form action="/" method="get" class="space-y-4">
+    <div class="flex shadow-lg rounded-lg overflow-hidden">
+      <input type="text" name="search" placeholder="Search manga..." 
+             value="{{ .SearchQuery }}"
+             class="flex-1 p-4 text-lg border-0 focus:ring-2 focus:ring-indigo-500">
+      <button type="submit" class="bg-indigo-600 text-white px-6 hover:bg-indigo-700 transition-colors">
+        Search
+      </button>
+    </div>
+  </form>
+</div>
+
+{{ if .SearchQuery }}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  {{ range .Mangas }}
+  <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+    {{ if .Attributes.CoverURL }}
+      <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
+           alt="Cover image"
+           class="w-full h-64 object-cover">
+    {{ else }}
+      <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+        <span class="text-gray-400">No Cover</span>
+      </div>
+    {{ end }}
+    <div class="p-4">
+      <h2 class="text-lg font-semibold mb-2 truncate">
+        {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
+          {{ . }}
+        {{ else }}
+          Untitled
+        {{ end }}
+      </h2>
+      <a href="/manga/{{ .ID }}" 
+         class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+        View Details
+      </a>
+    </div>
+  </div>
+  {{ else }}
+  <div class="col-span-full text-center py-12">
+    <p class="text-gray-500 text-lg">No results found. Try another search.</p>
+  </div>
+  {{ end }}
+</div>
+
+{{ if or .PrevPage .NextPage }}
+<div class="mt-8 flex justify-center gap-4">
+  {{ if .PrevPage }}
+    <a href="/?search={{ .SearchQuery }}page={{ .PrevPage }}" 
+       class="bg-white px-5 py-2 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200">
+      ← Previous
+    </a>
+  {{ end }}
+  {{ if .NextPage }}
+    <a href="/?search={{ .SearchQuery }}&page={{ .NextPage }}" 
+       class="bg-white px-5 py-2 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200">
+      Next →
+    </a>
+  {{ end }}
+</div>
+{{ end }}
+{{ else }}
+<div class="space-y-12">
+  {{ if .PopularMangas }}
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Popular Mangas</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {{ range .PopularMangas }}
+      <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+        {{ if .Attributes.CoverURL }}
+          <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
+               alt="Cover image"
+               class="w-full h-64 object-cover">
+        {{ else }}
+          <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+            <span class="text-gray-400">No Cover</span>
+          </div>
+        {{ end }}
+        <div class="p-4">
+          <h2 class="text-lg font-semibold mb-2 truncate">
+            {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
+              {{ . }}
+            {{ else }}
+              Untitled
+            {{ end }}
+          </h2>
+          <a href="/manga/{{ .ID }}" 
+             class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+            View Details
+          </a>
+        </div>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+
+  {{ if .RecentMangas }}
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Recently Updated Mangas</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {{ range .RecentMangas }}
+      <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+        {{ if .Attributes.CoverURL }}
+          <img src="/image-proxy?url={{ .Attributes.CoverURL }}" 
+               alt="Cover image"
+               class="w-full h-64 object-cover">
+        {{ else }}
+          <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+            <span class="text-gray-400">No Cover</span>
+          </div>
+        {{ end }}
+        <div class="p-4">
+          <h2 class="text-lg font-semibold mb-2 truncate">
+            {{ with or (index .Attributes.Title "en") (index .Attributes.Title "ja") }} 
+              {{ . }}
+            {{ else }}
+              Untitled
+            {{ end }}
+          </h2>
+          <a href="/manga/{{ .ID }}" 
+             class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+            View Details
+          </a>
+        </div>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+
+  {{ if .RandomManga.ID }}
+  <div>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Random Pick for You</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+        {{ if .RandomManga.Attributes.CoverURL }}
+          <img src="/image-proxy?url={{ .RandomManga.Attributes.CoverURL }}" 
+               alt="Cover image"
+               class="w-full h-64 object-cover">
+        {{ else }}
+          <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+            <span class="text-gray-400">No Cover</span>
+          </div>
+        {{ end }}
+        <div class="p-4">
+          <h2 class="text-lg font-semibold mb-2 truncate">
+            {{ with or (index .RandomManga.Attributes.Title "en") (index .RandomManga.Attributes.Title "ja") }} 
+              {{ . }}
+            {{ else }}
+              Untitled
+            {{ end }}
+          </h2>
+          <a href="/manga/{{ .RandomManga.ID }}" 
+             class="inline-block w-full text-center bg-indigo-100 text-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-200 transition-colors">
+            View Details
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+{{ end }}

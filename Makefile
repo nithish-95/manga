@@ -5,5 +5,5 @@ build:
 run: 
 	bin/manga
 clean:
-	go mod tidy
-	rm bin/* || true
+	cd backend && go mod tidy
+	rm backend/bin/* || true
